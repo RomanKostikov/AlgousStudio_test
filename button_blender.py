@@ -3,7 +3,6 @@ import requests
 import os
 from datetime import datetime
 
-
 class SaveAndSendOperator(bpy.types.Operator):
     """Сохранить сцену и отправить POST-запрос"""
     bl_idname = "object.save_and_send"
@@ -27,7 +26,9 @@ class SaveAndSendOperator(bpy.types.Operator):
             filepath = bpy.data.filepath
 
             # Параметры POST-запроса
-            url = "http://127.0.0.1:8000/api/save_scene/"
+#            url = "http://127.0.0.1:8000/api/save_scene/"
+            url = "https://test777.strangled.net/api/save_scene/"
+
             data = {
                 "username": username,
                 "save_time": save_time,
@@ -48,11 +49,9 @@ class SaveAndSendOperator(bpy.types.Operator):
 
         return {'FINISHED'}
 
-
 # Функция добавления кнопки в меню Mesh -> Add
 def menu_func(self, context):
     self.layout.operator(SaveAndSendOperator.bl_idname)
-
 
 # Регистрация оператора и добавление в меню
 def register():
@@ -61,7 +60,6 @@ def register():
     bpy.utils.register_class(SaveAndSendOperator)
     bpy.types.VIEW3D_MT_mesh_add.append(menu_func)
     print("Оператор и кнопка зарегистрированы.")
-
 
 # Удаление оператора и кнопки из меню
 def unregister():
@@ -76,7 +74,6 @@ def unregister():
         print("Кнопка удалена.")
     except ValueError:
         print("Кнопка уже была удалена.")
-
 
 # Запуск скрипта
 if __name__ == "__main__":
