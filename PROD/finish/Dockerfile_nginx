@@ -1,0 +1,8 @@
+FROM nginx:latest
+
+RUN rm /etc/nginx/conf.d/default.conf
+COPY nginx.conf /etc/nginx/conf.d
+# добавил, когда запускал по https
+COPY static /as/static
+# добавил, когда запускал по http
+#COPY proxy_params /etc/nginx

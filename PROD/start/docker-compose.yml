@@ -1,0 +1,50 @@
+version: "3.9"
+
+services:
+  algousstudio_project:
+#    build:
+#      context: .
+#      dockerfile: Dockerfile_django
+    image: django-app
+    container_name: as_docker
+    volumes:
+      - web-root:/as/static
+      - media_volume:/as/media
+    command: >
+      bash -c "./manage.py collectstatic --noinput && ./manage.py migrate  && /home/as/.local/bin/gunicorn -b 0.0.0.0:8000 AlgousStudio_test.wsgi:application"
+
+  nginx:
+    build:
+      dockerfile: Dockerfile_nginx
+      context: .
+    container_name: as_nginx
+    image: as_nginx
+    restart: always
+    volumes:
+      - web-root:/as/static
+      - media_volume:/as/media
+      - certbot-etc:/etc/letsencrypt
+      - certbot-var:/var/lib/letsencrypt
+      - ./cert/:/etc/nginx/certs
+    depends_on:
+      - algousstudio_project
+    ports:
+      - "80:80"
+      #- "443:443" # Добавляем порт для HTTPS
+
+  certbot:
+    image: certbot/certbot
+    depends_on:
+      - nginx
+    container_name: certbot
+    volumes:
+      - certbot-etc:/etc/letsencrypt
+      - certbot-var:/var/lib/letsencrypt
+      - web-root:/as/static
+    command: certonly --webroot --webroot-path=/as/static --email no-reply@test777.ru --agree-tos --no-eff-email --staging -d test777.strangled.net -d www.test777.strangled.net -v
+
+volumes:
+  web-root:
+  media_volume:
+  certbot-etc:
+  certbot-var:

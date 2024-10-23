@@ -1,0 +1,43 @@
+FROM python:3.10-slim-bookworm
+
+# Установка оболочки для команд RUN
+SHELL ["/bin/bash", "-c"]
+
+# Устанавливаем переменные окружения
+ENV PYTHONDONTWRITEBYTECODE 1
+ENV PYTHONUNBUFFERED 1
+
+# Обновляем pip
+RUN pip install --upgrade pip
+
+# Обновляем пакеты и устанавливаем зависимости
+RUN apt-get update && apt-get install -y \
+    libsqlite3-dev sqlite3 \
+    libjpeg-dev libxslt-dev libpq-dev \
+    libmariadb-dev libmariadb-dev-compat \
+    gettext cron openssh-client flake8 locales vim dos2unix
+
+# Проверяем версию SQLite
+RUN sqlite3 --version
+
+RUN useradd -rms /bin/bash as && chmod 777 /opt /run
+
+# Устанавливаем рабочую директорию
+WORKDIR /as
+
+RUN mkdir /as/static && mkdir /as/media && chown -R as:as /as && chmod 755 /as
+
+# Копируем все файлы в контейнер
+COPY --chown=as:as . .
+
+USER root
+
+# Меняем формат файла manage.py на UNIX и делаем его исполняемым
+RUN dos2unix manage.py && chmod +x manage.py
+
+USER as
+
+RUN pip install -r requirements.txt
+RUN pip install gunicorn
+
+CMD ["/home/as/.local/bin/gunicorn","-b","0.0.0.0:8001","AlgousStudio_test.wsgi:application"]
